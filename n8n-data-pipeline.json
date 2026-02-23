@@ -1,0 +1,549 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "eb10b3c5-c201-4bed-830d-3bf7afbeae8a",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -6560,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "157f0edf-96d0-4348-afe2-5f50f6672ebc",
+      "name": "Scheduled Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -6560,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { field_name: 'metadata.source', field_schema: 'keyword' } },\n  { json: { field_name: 'metadata.versionId', field_schema: 'keyword' } }\n];"
+      },
+      "id": "10d32cb2-f7c6-4482-87e0-0da903d39e31",
+      "name": "Prepare Index Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6320,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "https://67b235d3-96eb-45b1-aaa2-0a2156e4ffe1.us-west-1-0.aws.cloud.qdrant.io:6333/collections/ipospays-knowledge/index",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"field_name\": \"{{ $json.field_name }}\", \"field_schema\": \"{{ $json.field_schema }}\" }",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "0c4ccdfd-9203-43eb-8370-96066a2a6f39",
+      "name": "Ensure Qdrant Indexes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6080,
+        224
+      ],
+      "credentials": {
+        "qdrantApi": {
+          "id": "MvEWRgGqiwq3qSev",
+          "name": "QdrantApi account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const urls = [\n  'https://docs.ipospays.com/',\n  'https://docs.ipospays.com/batch-report',\n  'https://docs.ipospays.com/batch-report/apidocs',\n  'https://docs.ipospays.com/clearcard-api',\n  'https://docs.ipospays.com/clearcard-api/apidocs',\n  'https://docs.ipospays.com/commodity-codes',\n  'https://docs.ipospays.com/dvpaylite-deep-linking-integration',\n  'https://docs.ipospays.com/error-codes-and-messages',\n  'https://docs.ipospays.com/feed-integration',\n  'https://docs.ipospays.com/feed-integration/apidocs',\n  'https://docs.ipospays.com/freedom-to-design',\n  'https://docs.ipospays.com/freedom-to-design/apidocs',\n  'https://docs.ipospays.com/google-pay-developer-documentation',\n  'https://docs.ipospays.com/hosted-payment-page',\n  'https://docs.ipospays.com/hosted-payment-page/apidocs',\n  'https://docs.ipospays.com/iPOS-SAFE',\n  'https://docs.ipospays.com/iPOSpays-WooCommerce-Extension',\n  'https://docs.ipospays.com/iPOSpays-WooCommerce-Extension/how-to-install-the-plugin',\n  'https://docs.ipospays.com/ios-deep-linking-integration',\n  'https://docs.ipospays.com/ipos-pays-authentication-token-api',\n  'https://docs.ipospays.com/ipos-transact',\n  'https://docs.ipospays.com/ipos-transact/apidocs',\n  'https://docs.ipospays.com/migrate-to-ipospays',\n  'https://docs.ipospays.com/multi-mid',\n  'https://docs.ipospays.com/onboard-merchant',\n  'https://docs.ipospays.com/onboard-merchant/apidocs',\n  'https://docs.ipospays.com/payment-terminals-integrations',\n  'https://docs.ipospays.com/payment-terminals-integrations/dvpaylite',\n  'https://docs.ipospays.com/payment-terminals-integrations/dvpaylite/dvpaylite-intent-mode',\n  'https://docs.ipospays.com/payment-terminals-integrations/dvpaylite/dvpaylite-uri-mode',\n  'https://docs.ipospays.com/payment-terminals-integrations/peripherals-sdks',\n  'https://docs.ipospays.com/printer-sdk',\n  'https://docs.ipospays.com/recurring-payments',\n  'https://docs.ipospays.com/recurring-payments/apidocs',\n  'https://docs.ipospays.com/spin-specification',\n  'https://docs.ipospays.com/spin-specification/apidocs',\n  'https://docs.ipospays.com/swipereader-sdk',\n  'https://docs.ipospays.com/tap-to-pay-on-android',\n  'https://docs.ipospays.com/tap-to-pay-on-android/in-app-sdk',\n  'https://docs.ipospays.com/tap-to-pay-on-iphone',\n  'https://docs.ipospays.com/tap-to-pay-on-iphone/deep-linking',\n  'https://docs.ipospays.com/tap-to-pay-on-iphone/deep-linking/V1',\n  'https://docs.ipospays.com/tap-to-pay-on-iphone/deep-linking/V2',\n  'https://docs.ipospays.com/tap-to-pay-on-iphone/in-app-sdk',\n  'https://docs.ipospays.com/transaction-status-check',\n  'https://docs.ipospays.com/transaction-status-check/apidocs',\n  'https://ipospays.com/',\n  'https://knowledge.ipospays.com/',\n  'https://knowledge.ipospays.com/card-validation-risk-rule',\n  'https://knowledge.ipospays.com/commodity-codes',\n  'https://knowledge.ipospays.com/portal-features/3d-secure-on-ipospays',\n  'https://knowledge.ipospays.com/portal-features/apple-pay-integration-on-ipospays',\n  'https://knowledge.ipospays.com/portal-features/customized-checkout-page-and-payment-links-on-ipospays',\n  'https://knowledge.ipospays.com/portal-features/generate-payment-form-on-ipospays',\n  'https://knowledge.ipospays.com/portal-features/ipos-safe',\n  'https://knowledge.ipospays.com/portal-features/merchant-invoicing-on-ipospays',\n  'https://knowledge.ipospays.com/portal-features/updating-the-woocommerce-ipospays-payment-gateway-plugin',\n  'https://knowledge.ipospays.com/portal-features/user-guide-to-merchant-cloudpos-transactions',\n  'https://knowledge.ipospays.com/portal-features/white-label-iPOSpays',\n  'https://knowledge.ipospays.com/pos-features/command-and-communication-center-on-ipospays',\n  'https://knowledge.ipospays.com/pos-features/digital-ads-on-screen',\n  'https://knowledge.ipospays.com/pos-features/dvstore',\n  'https://knowledge.ipospays.com/pos-features/how-to-set-up-iposgo-ios-on-your-iphone',\n  'https://knowledge.ipospays.com/pos-features/multi-mid',\n  'https://knowledge.ipospays.com/pos-features/offline-mode-on-pos',\n  'https://knowledge.ipospays.com/pos-features/register-lite',\n  'https://knowledge.ipospays.com/pos-features/setting-up-p17-terminal-with-p1',\n  'https://knowledge.ipospays.com/pos-features/settle-by-store',\n  'https://knowledge.ipospays.com/third-party-integrations/enroll-and-pay-integration-on-ipospays',\n  'https://knowledge.ipospays.com/third-party-integrations/pockyt-integration-on-ipospays',\n  'https://knowledge.ipospays.com/third-party-integrations/quickbooks-integration-on-ipospays',\n  'https://portal.ipospays.com/',\n  'https://releases.ipospays.com/',\n  'https://releases.ipospays.com/3d-secure-management-moved-to-add-on-features',\n  'https://releases.ipospays.com/3d-secure-on-ipospays',\n  'https://releases.ipospays.com/Decimal-Points-for-Factor-4-Gift-Cards',\n  'https://releases.ipospays.com/EGift',\n  'https://releases.ipospays.com/Expanded-Payment-Notification-Recipients',\n  'https://releases.ipospays.com/FEED',\n  'https://releases.ipospays.com/Fresh-Look-and-Feel',\n  'https://releases.ipospays.com/Incremental-Auth-for-POS',\n  'https://releases.ipospays.com/Login-as-Functionality-Updated',\n  'https://releases.ipospays.com/MFA-for-Manual-Refunds',\n  'https://releases.ipospays.com/Mandatory-12-digit-Password-for-iPOSpays',\n  'https://releases.ipospays.com/OTP-Required-for-TPN-Change',\n  'https://releases.ipospays.com/Recurring-Payments-Module',\n  'https://releases.ipospays.com/Tokenization-for-Paya-ACH',\n  'https://releases.ipospays.com/WhiteLabel-iPOSpays',\n  'https://releases.ipospays.com/Whitelisting-Domain-Names-Capability-for-ISOs',\n  'https://releases.ipospays.com/accept-gift-cards-via-ipos-transact-api',\n  'https://releases.ipospays.com/accurate-dba-in-settlement-report',\n  'https://releases.ipospays.com/accurate-email-displayed-in-invoice',\n  'https://releases.ipospays.com/accurate-store-name-address',\n  'https://releases.ipospays.com/accurate-tip-and-tax-displayed-for-itemized-billing-receipts',\n  'https://releases.ipospays.com/accurate-values-displayed-in-display-cart-items-screen',\n  'https://releases.ipospays.com/ach-refund-issue-resolved',\n  'https://releases.ipospays.com/ach-support-in-recurring-payments',\n  'https://releases.ipospays.com/ach-support-in-transact-api',\n  'https://releases.ipospays.com/added-filters-to-the-invoice-tab',\n  'https://releases.ipospays.com/added-terms-and-conditions',\n  'https://releases.ipospays.com/additional-commodity-codes',\n  'https://releases.ipospays.com/additional-commodity-codes-for-iposgo',\n  'https://releases.ipospays.com/additional-details-in-batch-and-transaction-report',\n  'https://releases.ipospays.com/additional-fields-in-transaction-report',\n  'https://releases.ipospays.com/additional-info-in-batch-settlement-report',\n  'https://releases.ipospays.com/additional-lines-for-receipt-header',\n  'https://releases.ipospays.com/additional-options-in-invoice-module',\n  'https://releases.ipospays.com/adjust-fee-option-for-dual-pricing-and-true-cash-discount',\n  'https://releases.ipospays.com/adjust-price-in-dual-pricing',\n  'https://releases.ipospays.com/agent-office-privilege-control',\n  'https://releases.ipospays.com/agent-tagging-during-merchant-onboarding',\n  'https://releases.ipospays.com/alpha-numeric-password-for-manual-apn',\n  'https://releases.ipospays.com/alphanumeric-support-for-tag-values',\n  'https://releases.ipospays.com/alternate-payments-displayed-in-the-batch-summary-report',\n  'https://releases.ipospays.com/app-update-notification',\n  'https://releases.ipospays.com/apple-pay-now-on-ipospays',\n  'https://releases.ipospays.com/apple-pay-support-for-ipospays-woocommerce-plugin',\n  'https://releases.ipospays.com/apple-pay-support-in-freedom-to-design',\n  'https://releases.ipospays.com/apply-tbp-fee-on-cash-transactions',\n  'https://releases.ipospays.com/asset-protection',\n  'https://releases.ipospays.com/auto-enable-store-wise-settlement-reports-for-new-merchants',\n  'https://releases.ipospays.com/auto-populate-for-saved-cards-on-google-pay',\n  'https://releases.ipospays.com/auto-printing-of-customer-receipts',\n  'https://releases.ipospays.com/automatic-new-user-verification-alerts',\n  'https://releases.ipospays.com/automatic-risk-alert-notifications',\n  'https://releases.ipospays.com/avs-response-handled-for-fiserv-omaha-and-north',\n  'https://releases.ipospays.com/bank-payments-now-supported-on-the-redesigned-hosted-payment-pages',\n  'https://releases.ipospays.com/bank-standalone-refund-for-cloudpos',\n  'https://releases.ipospays.com/bank-transaction-flexibility-optional-and-mandatory-tags',\n  'https://releases.ipospays.com/batch-error-in-standalone-payment-terminals',\n  'https://releases.ipospays.com/better-handling-of-address-info-with-ipos-transact',\n  'https://releases.ipospays.com/bin-check-for-reward-pay',\n  'https://releases.ipospays.com/breakup-screen-now-optional-on-hpp-and-ghpp',\n  'https://releases.ipospays.com/breakup-screen-on-pinpad-device',\n  'https://releases.ipospays.com/bringing-visa-cedp-support-on-ipospays',\n  'https://releases.ipospays.com/bug-fixes',\n  'https://releases.ipospays.com/by-the-store-for-untipped-and-server-reports',\n  'https://releases.ipospays.com/capital-letter-error-in-email-field',\n  'https://releases.ipospays.com/card-brand-mids-now-mandatory-for-3d-secure',\n  'https://releases.ipospays.com/card-ejection-alert',\n  'https://releases.ipospays.com/card-validation-risk-rule',\n  'https://releases.ipospays.com/cardholder-name-bug-fix',\n  'https://releases.ipospays.com/cardholder-name-display-on-receipts',\n  'https://releases.ipospays.com/cardholder-name-for-paya-ach',\n  'https://releases.ipospays.com/cash-refund-support-for-cloudpos',\n  'https://releases.ipospays.com/cash-transactions-support-for-cloudpos',\n  'https://releases.ipospays.com/categories-for-batch-settlement-receipt',\n  'https://releases.ipospays.com/change-due-shown-after-processing',\n  'https://releases.ipospays.com/change-in-login-capabilities',\n  'https://releases.ipospays.com/change-primary-merchant-email-address',\n  'https://releases.ipospays.com/change-user-roles-for-merchant-admin',\n  'https://releases.ipospays.com/changed-ach-to-bank-for-better-readability',\n  'https://releases.ipospays.com/changed-default-filter-within-dashboard-cards',\n  'https://releases.ipospays.com/check-as-a-payment-type',\n  'https://releases.ipospays.com/clerk-id-filter',\n  'https://releases.ipospays.com/cloudpos-customization',\n  'https://releases.ipospays.com/cloudpos-pinpad-transactions-updated-to-quickbooks',\n  'https://releases.ipospays.com/configurable-logo-display-on-spin-terminals',\n  'https://releases.ipospays.com/configurable-merchant-vat-registration-number',\n  'https://releases.ipospays.com/consistent-batch-close-time-display',\n  'https://releases.ipospays.com/consistent-data-in-merchant-dashboard',\n  'https://releases.ipospays.com/control-agent-ability-to-edit-merchant-fees',\n  'https://releases.ipospays.com/correct-payment-method-displayed-in-merchant-invoicing',\n  'https://releases.ipospays.com/custom-fields-in-paya-ach-transactions',\n  'https://releases.ipospays.com/custom-tags-for-ach',\n  'https://releases.ipospays.com/customer-copy-print-confirmation-for-spin',\n  'https://releases.ipospays.com/customer-signature-added-to-spin-response-code',\n  'https://releases.ipospays.com/customizable-tags-for-ghpp',\n  'https://releases.ipospays.com/cvv-not-mandatory-for-google-pay-transactions',\n  'https://releases.ipospays.com/cvv-not-mandatory-for-run-a-sale-transaction',\n  'https://releases.ipospays.com/dashboard-as-a-privilege',\n  'https://releases.ipospays.com/dba-reference-id-filter-in-my-customers-module',\n  'https://releases.ipospays.com/debit-contactless-bug-fix',\n  'https://releases.ipospays.com/declined-receipts-now-printing-on-kozen-and-wizarpos-pin-pads',\n  'https://releases.ipospays.com/deep-linking-integration',\n  'https://releases.ipospays.com/deep-linking-on-iposgo',\n  'https://releases.ipospays.com/deep-linking-optional-screens-support',\n  'https://releases.ipospays.com/delete-cards-for-store-manager',\n  'https://releases.ipospays.com/delete-customer-issue-resolved',\n  'https://releases.ipospays.com/delete-user-fixed',\n  'https://releases.ipospays.com/device-alerts-for-deep-linking-transactions',\n  'https://releases.ipospays.com/digital-ads-on-screen',\n  'https://releases.ipospays.com/disable-pay-now',\n  'https://releases.ipospays.com/disclaimer-page',\n  'https://releases.ipospays.com/display-cart-items-on-device-for-spin',\n  'https://releases.ipospays.com/display-merchant-and-store-logos',\n  'https://releases.ipospays.com/display-of-fee-on-terminal',\n  'https://releases.ipospays.com/dual-pricing-and-tbp-support-for-recurring-payment',\n  'https://releases.ipospays.com/dual-pricing-fixed-fee',\n  'https://releases.ipospays.com/dual-pricing-support-for-ipospays-woocommerce-plugin',\n  'https://releases.ipospays.com/duplicate-settlement-report-issue-fixed',\n  'https://releases.ipospays.com/dvstore',\n  'https://releases.ipospays.com/ebt-card-balance-in-spin-response',\n  'https://releases.ipospays.com/ebt-cash-transaction-receipt-labeling',\n  'https://releases.ipospays.com/ecard-added-as-a-gift-host',\n  'https://releases.ipospays.com/edit-store-bug-fix',\n  'https://releases.ipospays.com/elavon-processor',\n  'https://releases.ipospays.com/elavon-support-for-3d-secure-on-ipospays',\n  'https://releases.ipospays.com/elavon-support-for-card-validation-risk-rule',\n  'https://releases.ipospays.com/elavon-support-for-google-pay-&-apple-pay-transactions',\n  'https://releases.ipospays.com/elavon-supports-offline-mode-transactions',\n  'https://releases.ipospays.com/email-templates-redesigned',\n  'https://releases.ipospays.com/email-when-new-users-are-created',\n  'https://releases.ipospays.com/enhanced-backward-compatibility-for-spin',\n  'https://releases.ipospays.com/enhanced-ebt-capabilities-contactless-payments',\n  'https://releases.ipospays.com/enhanced-invoice-retrieval-for-quickbooks-integration',\n  'https://releases.ipospays.com/enhanced-quickbooks-integration',\n  'https://releases.ipospays.com/enhanced-tip-screen-on-pos',\n  'https://releases.ipospays.com/enhancements-to-send-payment-link',\n  'https://releases.ipospays.com/error-in-deep-linking-with-fee-profiles',\n  'https://releases.ipospays.com/evs-age-verification-now-available-via-dvstore',\n  'https://releases.ipospays.com/excel-file-attached-to-settlement-report-email',\n  'https://releases.ipospays.com/expanded-character-limit-for-descriptions',\n  'https://releases.ipospays.com/expanded-domain-compatibility',\n  'https://releases.ipospays.com/expanded-multi-mid-support-for-cloudpos-with-pin-pad',\n  'https://releases.ipospays.com/expanded-worldpay-support-3ds-authentication-and-hsa-card-acceptance',\n  'https://releases.ipospays.com/extended-ach-support',\n  'https://releases.ipospays.com/extended-character-limit-for-custom-tags',\n  'https://releases.ipospays.com/external-payment-options-in-the-iposgo-in-app-sdk-ios',\n  'https://releases.ipospays.com/fee-options-in-register-lite-for-tap-to-pay-on-iphone-with-iposgo',\n  'https://releases.ipospays.com/fee-report-for-backward-compatibility',\n  'https://releases.ipospays.com/fee-report-support-for-custom-fees',\n  'https://releases.ipospays.com/feed-activation-from-portal',\n  'https://releases.ipospays.com/feed-enhancements-for-settlement-and-transaction-data',\n  'https://releases.ipospays.com/firmware-upgrades-now-handled-automatically',\n  'https://releases.ipospays.com/fiserv-omaha',\n  'https://releases.ipospays.com/fiserv-omaha-for-tap-to-pay-on-iphone-with-iposgo',\n  'https://releases.ipospays.com/fix-cardholder-name-highlighted-incorrectly-on-ghpp-with-gpay',\n  'https://releases.ipospays.com/fix-for-missing-rkl-device-alerts',\n  'https://releases.ipospays.com/fixed-discover-card-compatibility-with-apple-pay',\n  'https://releases.ipospays.com/fixed-downloading-filtering-report-in-transactions-module',\n  'https://releases.ipospays.com/fixed-expected-average-column',\n  'https://releases.ipospays.com/fixed-last-4-digits-pan-filter-in-invoices-module',\n  'https://releases.ipospays.com/fixed-spring-framework-error-during-incremental-auth',\n  'https://releases.ipospays.com/fixed-tag-values-on-pinpad-device',\n  'https://releases.ipospays.com/fixed-tip-adjust-for-deep-linking',\n  'https://releases.ipospays.com/flexible-printing-options-on-batch-settlement',\n  'https://releases.ipospays.com/format-error',\n  'https://releases.ipospays.com/fortellis-invoice-number-filter',\n  'https://releases.ipospays.com/four-decimal-places-for-fee-types',\n  'https://releases.ipospays.com/four-decimal-places-in-l2-l3-tax-rate',\n  'https://releases.ipospays.com/freedom-to-design-null-issue',\n  'https://releases.ipospays.com/get-card-request-api-in-spin-api',\n  'https://releases.ipospays.com/get-customer-signature-for-cloudpos-pin-pad',\n  'https://releases.ipospays.com/get-sign-feature',\n  'https://releases.ipospays.com/get-signature-response-code-in-spin',\n  'https://releases.ipospays.com/ghpp-as-a-privilege',\n  'https://releases.ipospays.com/ghpp-customizable-tag',\n  'https://releases.ipospays.com/gift-and-loyalty-support-for-deep-linking-users',\n  'https://releases.ipospays.com/gift-card-receipt-balance-display',\n  'https://releases.ipospays.com/google-pay-for-freedom-to-design',\n  'https://releases.ipospays.com/google-pay-for-woocommerce',\n  'https://releases.ipospays.com/google-pay-issue-resolved',\n  'https://releases.ipospays.com/google-pay-now-available-in-woocommerce-embedded-checkout',\n  'https://releases.ipospays.com/hsa-fsa-card-acceptance-now-supported-on-ipos-transact-api',\n  'https://releases.ipospays.com/img-tag-in-spin-request-code',\n  'https://releases.ipospays.com/improved-batches-displaying-cardholder-names',\n  'https://releases.ipospays.com/improved-digital-campaign-refresh-without-param-changes',\n  'https://releases.ipospays.com/improved-host-response-code-transparency',\n  'https://releases.ipospays.com/improved-pin-pad-transaction-handling',\n  'https://releases.ipospays.com/improved-search-bar-functionality',\n  'https://releases.ipospays.com/improved-spin-response-data',\n  'https://releases.ipospays.com/improved-template-permissions-for-add-on-users',\n  'https://releases.ipospays.com/in-app-sdk-for-iposgo-ios',\n  'https://releases.ipospays.com/incorrect-expires-on-date-displayed-in-merchant-invoicing',\n  'https://releases.ipospays.com/incorrect-fee-applied-on-debit-pre-auth-transactions-when-tcd-was-disabled',\n  'https://releases.ipospays.com/increased-offline-mode-transaction-limit',\n  'https://releases.ipospays.com/incremental-auth-for-cloudpos',\n  'https://releases.ipospays.com/incremental-auth-through-transact-api',\n  'https://releases.ipospays.com/individual-tip-reports-for-restaurant-merchants',\n  'https://releases.ipospays.com/integrate-zip-codes-for-additional-locations',\n  'https://releases.ipospays.com/integrations',\n  'https://releases.ipospays.com/introducing-blink-on-ipospays',\n  'https://releases.ipospays.com/introducing-command-and-communication-center-on-ipospays',\n  'https://releases.ipospays.com/introducing-customized-checkout-page-and-payment-links',\n  'https://releases.ipospays.com/introducing-enroll-and-pay-on-ipospays',\n  'https://releases.ipospays.com/introducing-paya-ach',\n  'https://releases.ipospays.com/invoice-date-for-send-payment-link-transactions',\n  'https://releases.ipospays.com/invoice-displayed',\n  'https://releases.ipospays.com/invoice-module-enhancement',\n  'https://releases.ipospays.com/invoice-pending-icon',\n  'https://releases.ipospays.com/invoice-tab-gets-a-new-filter',\n  'https://releases.ipospays.com/invoice-type-renamed',\n  'https://releases.ipospays.com/ipos-s-a-f-e',\n  'https://releases.ipospays.com/ipos-token-in-deep-linking-response-code',\n  'https://releases.ipospays.com/ipos-transact-api-authentication-encrypted-card-data',\n  'https://releases.ipospays.com/iposgo',\n  'https://releases.ipospays.com/iposgo-deep-linking-sdk-v2',\n  'https://releases.ipospays.com/ipospays',\n  'https://releases.ipospays.com/ipospays-fortellis-integration',\n  'https://releases.ipospays.com/ipospays-password-reset-glitch-fixed',\n  'https://releases.ipospays.com/ipospays-secured-by-memcyco',\n  'https://releases.ipospays.com/isos-can-now-transfer-tpns-between-stores',\n  'https://releases.ipospays.com/isv-id-and-recon-id-support-for-spin-api',\n  'https://releases.ipospays.com/itemized-billing-on-send-payment-link',\n  'https://releases.ipospays.com/key-in-for-iposgo',\n  'https://releases.ipospays.com/key-in-on-android-with-iposgo',\n  'https://releases.ipospays.com/l2-l3',\n  'https://releases.ipospays.com/l2-l3-commodity-code-issue-resolved',\n  'https://releases.ipospays.com/l2-l3-data-in-spin-requests',\n  'https://releases.ipospays.com/last-4-digit-entry-causing-transaction-cancellation-in-pin-pad-mode',\n  'https://releases.ipospays.com/last-few-batches',\n  'https://releases.ipospays.com/level-2-level-3-autofilling-for-iposgo',\n  'https://releases.ipospays.com/logo-displayed-on-pin-pad',\n  'https://releases.ipospays.com/manual-apn-configuration',\n  'https://releases.ipospays.com/mastercard-integrity-issue',\n  'https://releases.ipospays.com/mastercards-requirements-for-pin-bypass',\n  'https://releases.ipospays.com/mcc-5969',\n  'https://releases.ipospays.com/mcc-code',\n  'https://releases.ipospays.com/merchant-code-support-extended-to-ios-tpns',\n  'https://releases.ipospays.com/merchant-control-over-customer-copies',\n  'https://releases.ipospays.com/merchant-invoicing-on-ipospays',\n  'https://releases.ipospays.com/merchant-privilege-partial-void',\n  'https://releases.ipospays.com/merchant-tpn-geo-location-view',\n  'https://releases.ipospays.com/merchants-can-set-weekly-recurring-payments',\n  'https://releases.ipospays.com/mfa-for-new-user-creation',\n  'https://releases.ipospays.com/mini-receipt',\n  'https://releases.ipospays.com/mini-receipt-for-qd-series',\n  'https://releases.ipospays.com/more-item-support-for-inventory',\n  'https://releases.ipospays.com/multi-factor-authentication',\n  'https://releases.ipospays.com/multi-mid-across-all-devices',\n  'https://releases.ipospays.com/multi-mid-support-for-spin-enabled-terminals',\n  'https://releases.ipospays.com/multi-refund',\n  'https://releases.ipospays.com/my-customers',\n  'https://releases.ipospays.com/negative-sign-settlement-status-shown-in-transaction-report',\n  'https://releases.ipospays.com/new-apis-now-available-for-ipospays-integrators',\n  'https://releases.ipospays.com/new-commodity-code-added',\n  'https://releases.ipospays.com/new-date-filter-option-in-invoice-tab',\n  'https://releases.ipospays.com/new-javascript-sdk-for-google-pay-in-freedom-to-design',\n  'https://releases.ipospays.com/new-keys-in-ipos-transact-api-v2-response',\n  'https://releases.ipospays.com/new-minor-channels-support-for-woocommerce',\n  'https://releases.ipospays.com/new-parameters-in-dual-pricing',\n  'https://releases.ipospays.com/new-payment-method-google-pay',\n  'https://releases.ipospays.com/new-pockyt-integration-on-dejavoo-terminals',\n  'https://releases.ipospays.com/new-risk-rules',\n  'https://releases.ipospays.com/new-terms-and-conditions-enforcement-on-login',\n  'https://releases.ipospays.com/new-theme-for-hpp-api',\n  'https://releases.ipospays.com/new-ui-for-generic-hosted-payment-page',\n  'https://releases.ipospays.com/no-receipt-option-for-iposgo',\n  'https://releases.ipospays.com/non-default-agent-office-user-privilege',\n  'https://releases.ipospays.com/offline-mode',\n  'https://releases.ipospays.com/onboard-puerto-rican-merchants-using-tsys-fiserv-processors',\n  'https://releases.ipospays.com/one-additional-auth-per-transaction',\n  'https://releases.ipospays.com/optimized-interchange',\n  'https://releases.ipospays.com/option-to-disable-spin-bypass-button-for-merchants',\n  'https://releases.ipospays.com/option-to-remove-tax-and-fee',\n  'https://releases.ipospays.com/optional-breakup-screen-for-pos-terminals',\n  'https://releases.ipospays.com/p1-threshold-limit',\n  'https://releases.ipospays.com/parameter-based-cvv-prompt-for-google-pay',\n  'https://releases.ipospays.com/partial-approval-amount-mismatch',\n  'https://releases.ipospays.com/partial-approval-bug-fix',\n  'https://releases.ipospays.com/partial-approval-for-gift-cards',\n  'https://releases.ipospays.com/partial-gift-card-redemption-tips-fixed',\n  'https://releases.ipospays.com/pay-now-option-for-ipospays-mobile-users',\n  'https://releases.ipospays.com/paya-ach-enhancements',\n  'https://releases.ipospays.com/payment-link-expiry-for-hosted-payment-page-api',\n  'https://releases.ipospays.com/pockyt-integration-now-available-on-the-redesigned-hosted-payment-page',\n  'https://releases.ipospays.com/pos-application-prompting-and-transaction-triggering',\n  'https://releases.ipospays.com/pos-initiated-settlement-issue',\n  'https://releases.ipospays.com/pos-settlement-report-total-accuracy',\n  'https://releases.ipospays.com/pos-terminal',\n  'https://releases.ipospays.com/pre-auth-transaction-retrieval',\n  'https://releases.ipospays.com/pre-sale-invoice-status',\n  'https://releases.ipospays.com/print-receipt-for-deepLinking-integration',\n  'https://releases.ipospays.com/print-receipt-request-in-spin',\n  'https://releases.ipospays.com/print-tax-reported',\n  'https://releases.ipospays.com/printing-customer-copy-in-cloudpos-pay-now-transactions',\n  'https://releases.ipospays.com/promo-code-integration-during-merchant-onboarding',\n  'https://releases.ipospays.com/purchase-order-number',\n  'https://releases.ipospays.com/qd-terminal-tpns-temporarily-disabled',\n  'https://releases.ipospays.com/quarterly-recurring-payments',\n  'https://releases.ipospays.com/recurring-payment-notifications-for-transaction-failures',\n  'https://releases.ipospays.com/recurring-payment-time-changed',\n  'https://releases.ipospays.com/recurring-payments-api',\n  'https://releases.ipospays.com/recurring-payments-bug-fix',\n  'https://releases.ipospays.com/recurring-payments-now-with-custom-frequency-option',\n  'https://releases.ipospays.com/redesigned-hosted-payment-page-for-send-link-and-qr-on-iposgo',\n  'https://releases.ipospays.com/redesigned-payments-section-for-woocommerce-plugin',\n  'https://releases.ipospays.com/redesigned-send-payment-link-page',\n  'https://releases.ipospays.com/redirecting-url-fixed-on-hpp-api',\n  'https://releases.ipospays.com/reduced-customer-copy-confirmation-prompt-duration',\n  'https://releases.ipospays.com/reduced-wait-time-in-pin-pad-mode',\n  'https://releases.ipospays.com/reference-id-fix',\n  'https://releases.ipospays.com/refund-after-90-days',\n  'https://releases.ipospays.com/register-lite',\n  'https://releases.ipospays.com/release-notes',\n  'https://releases.ipospays.com/remembering-static-ethernet-configuration',\n  'https://releases.ipospays.com/reminder-emails-for-send-payment-link',\n  'https://releases.ipospays.com/reminder-emails-sms-for-send-payment-link-on-iphones',\n  'https://releases.ipospays.com/renamed-sms-button-to-text',\n  'https://releases.ipospays.com/renamed-view-by-summary-to-view-by-trend',\n  'https://releases.ipospays.com/reports-section',\n  'https://releases.ipospays.com/reset-password-capability-for-isos',\n  'https://releases.ipospays.com/restricted-mode',\n  'https://releases.ipospays.com/retain-customer-contacts-in-run-a-sale',\n  'https://releases.ipospays.com/reward-pay-8-and-10-digit-bin-fee-calculation',\n  'https://releases.ipospays.com/reward-pay-dual-pricing-tender-based-pricing',\n  'https://releases.ipospays.com/reward-pay-tax-integration',\n  'https://releases.ipospays.com/run-a-sale',\n  'https://releases.ipospays.com/security-enhancement-for-payment-pages',\n  'https://releases.ipospays.com/send-e-receipt-for-tap-to-pay-on-iphone-with-iposgo',\n  'https://releases.ipospays.com/send-payment-link-for-tap-to-pay-on-iphone',\n  'https://releases.ipospays.com/send-payment-link-option-on-payment-device',\n  'https://releases.ipospays.com/separate-dvstore-module-on-ipospays',\n  'https://releases.ipospays.com/serial-number-added-to-spin-response',\n  'https://releases.ipospays.com/server-report',\n  'https://releases.ipospays.com/service-busy-after-batch-settlement',\n  'https://releases.ipospays.com/settle-batch-for-alternate-transactions',\n  'https://releases.ipospays.com/settle-by-store',\n  'https://releases.ipospays.com/shortened-url',\n  'https://releases.ipospays.com/signature-compatibility',\n  'https://releases.ipospays.com/signature-upload-fix-for-gift-transactions',\n  'https://releases.ipospays.com/signature-upload-fix-in-transactions-tab',\n  'https://releases.ipospays.com/signature-upload-shown-for-declined-transactions',\n  'https://releases.ipospays.com/simplified-access-to-current-batch-summary-from-pos',\n  'https://releases.ipospays.com/simplified-user-choice-response',\n  'https://releases.ipospays.com/skip-breakup-screen-for-spin',\n  'https://releases.ipospays.com/social-media-like-share-review-prompt',\n  'https://releases.ipospays.com/social-media-share',\n  'https://releases.ipospays.com/special-characters-accurately-reflected-in-email-communications',\n  'https://releases.ipospays.com/spin-enabled-terminals-now-support-dynamic-cart-updates',\n  'https://releases.ipospays.com/spin-intermediate-status-updates',\n  'https://releases.ipospays.com/spin-manual-entry-expiry-date',\n  'https://releases.ipospays.com/split-check',\n  'https://releases.ipospays.com/state-surcharge-tax-compliance',\n  'https://releases.ipospays.com/status-check-timing-on-p3-terminals',\n  'https://releases.ipospays.com/store-dba-name-fixed-in-invoice',\n  'https://releases.ipospays.com/store-level-ebt-number-configuration',\n  'https://releases.ipospays.com/storewise-settlement-email-report',\n  'https://releases.ipospays.com/streamlined-quickbooks-integration',\n  'https://releases.ipospays.com/street-check-in-card-validation-risk-rule',\n  'https://releases.ipospays.com/support-for-canadian-postal-codes-in-cloudpos',\n  'https://releases.ipospays.com/support-for-cash-transactions-with-any-pinpad',\n  'https://releases.ipospays.com/support-for-qd-devices',\n  'https://releases.ipospays.com/surcharge-limit',\n  'https://releases.ipospays.com/surcharge-support-for-fiserv-omaha',\n  'https://releases.ipospays.com/tag-values',\n  'https://releases.ipospays.com/tap-to-pay-on-iphone-now-supports-dual-pricing-and-tcd',\n  'https://releases.ipospays.com/tax-removal-on-cloudpos',\n  'https://releases.ipospays.com/tcd-for-all-cloudpos-transactions',\n  'https://releases.ipospays.com/template-management-on-ipospays',\n  'https://releases.ipospays.com/third-party-apps-filter',\n  'https://releases.ipospays.com/timeout-for-declined-transaction',\n  'https://releases.ipospays.com/tip-adjust-by-store',\n  'https://releases.ipospays.com/tpn-notes-for-iso-agent-interaction',\n  'https://releases.ipospays.com/transaction-mode-in-transactions-excel-file',\n  'https://releases.ipospays.com/transaction-status-check',\n  'https://releases.ipospays.com/transaction-summary-in-batch-report',\n  'https://releases.ipospays.com/transaction-tag-values-for-cloud-pos-transactions',\n  'https://releases.ipospays.com/treat-debit-card-as-cash-for-cloudpos',\n  'https://releases.ipospays.com/treat-debit-card-as-cash-in-dual-pricing',\n  'https://releases.ipospays.com/ui-enhancements-for-mobile-users',\n  'https://releases.ipospays.com/unionpay-emv-transactions-fixed',\n  'https://releases.ipospays.com/unique-sms-&-email-messages',\n  'https://releases.ipospays.com/updated-account-number-field-in-paya-ach',\n  'https://releases.ipospays.com/updated-customer-support-contact',\n  'https://releases.ipospays.com/updated-password-reset-box-messages',\n  'https://releases.ipospays.com/updated-visibility-of-make-card-price-same-as-cash-price',\n  'https://releases.ipospays.com/user-privilege-management-update',\n  'https://releases.ipospays.com/video-link-for-domain-whitelisting-in-woocommerce-plugin',\n  'https://releases.ipospays.com/view-by-device',\n  'https://releases.ipospays.com/view-more-data-with-the-today-tab-on-ipospays',\n  'https://releases.ipospays.com/void-and-refund',\n  'https://releases.ipospays.com/void-support-for-pre-auth-transactions',\n  'https://releases.ipospays.com/void-transactions-visible-in-batches',\n  'https://releases.ipospays.com/warning-message-for-recurring-payments',\n  'https://releases.ipospays.com/white-label-ipospays-bug-fixes',\n  'https://releases.ipospays.com/whitelisted-domain-names',\n  'https://releases.ipospays.com/worldpay'\n];\n\nconst timestamp = new Date().toISOString();\nreturn urls.map(url => ({\n  json: { url: url.replace(/\\/$/, ''), timestamp }\n}));"
+      },
+      "id": "fa6c3e3c-b621-4822-909a-a245dae1cda4",
+      "name": "Load All URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5840,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f04165f7-cc3a-4be9-b6bb-407a81b867f3",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -5488,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pass through - fixes Loop Over Items stuck loop issue\nreturn $input.all();"
+      },
+      "id": "fa004dfe-0c90-4f0e-9e31-20a8b3a80a2e",
+      "name": "Pass Through",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5152,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "7eae4338-03a9-4f41-956f-baf57761243f",
+      "name": "Fetch Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4848,
+        -208
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get URL from Pass Through (HTTP Request replaces $json, losing input fields)\nconst upstream = $('Pass Through').first().json;\nconst url = upstream.url || '';\nconst timestamp = upstream.timestamp || new Date().toISOString();\n\nif (!url) {\n  return [{ json: { hasChanged: false, url: 'unknown', skipReason: 'No URL found' } }];\n}\n\n// Get HTML from HTTP response (autodetect mode puts text in 'data' field)\nconst httpRes = $input.first().json;\nconst html = httpRes.data || httpRes.body || httpRes.html ||\n             (typeof httpRes === 'string' ? httpRes : '');\n\nif (!html || html.length < 100) {\n  return [{ json: { hasChanged: false, url, skipReason: 'No/minimal HTML content' } }];\n}\n\n// Strip HTML tags to get text\nlet text = html;\ntext = text.replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '');\ntext = text.replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '');\ntext = text.replace(/<nav[^>]*>[\\s\\S]*?<\\/nav>/gi, '');\ntext = text.replace(/<footer[^>]*>[\\s\\S]*?<\\/footer>/gi, '');\ntext = text.replace(/<header[^>]*>[\\s\\S]*?<\\/header>/gi, '');\n\nconst titleMatch = html.match(/<title[^>]*>([^<]+)<\\/title>/i);\nconst title = titleMatch ? titleMatch[1].trim() : '';\n\ntext = text.replace(/<\\/(p|div|h[1-6]|li|tr|blockquote|section|article)>/gi, '\\n');\ntext = text.replace(/<br\\s*\\/?>/gi, '\\n');\ntext = text.replace(/<li[^>]*>/gi, '• ');\ntext = text.replace(/<[^>]+>/g, ' ');\ntext = text.replace(/&nbsp;/g, ' ');\ntext = text.replace(/&amp;/g, '&');\ntext = text.replace(/&lt;/g, '<');\ntext = text.replace(/&gt;/g, '>');\ntext = text.replace(/&quot;/g, '\"');\ntext = text.replace(/&#39;/g, \"'\");\ntext = text.replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));\ntext = text.replace(/&#(\\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec)));\ntext = text.replace(/[ \\t]+/g, ' ');\ntext = text.replace(/\\n\\s*\\n/g, '\\n\\n');\ntext = text.trim();\n\nif (text.length < 200) {\n  return [{ json: { hasChanged: false, url, skipReason: 'Extracted text too short (' + text.length + ' chars)' } }];\n}\n\n// Hash the text (cyrb53)\nfunction cyrb53(str) {\n  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;\n  for (let i = 0; i < str.length; i++) {\n    const ch = str.charCodeAt(i);\n    h1 = Math.imul(h1 ^ ch, 2654435761);\n    h2 = Math.imul(h2 ^ ch, 1597334677);\n  }\n  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);\n  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);\n  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);\n  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);\n  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0');\n}\n\nconst contentHash = cyrb53(text);\n\n// Compare with stored hash\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.hashes) staticData.hashes = {};\nif (!staticData.stats) staticData.stats = { changed: 0, skipped: 0 };\n\nconst previousHash = staticData.hashes[url] || null;\nconst hasChanged = previousHash !== contentHash;\n\nif (hasChanged) {\n  staticData.hashes[url] = contentHash;\n  staticData.stats.changed++;\n} else {\n  staticData.stats.skipped++;\n}\n\nreturn [{\n  json: {\n    url, title, text, contentHash,\n    contentLength: text.length,\n    timestamp,\n    hasChanged,\n    previousHash,\n    fetchedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "09e88408-90c6-443f-ad76-5bc4085f7c6e",
+      "name": "Extract & Detect Change",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4528,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "changed-check",
+              "leftValue": "={{ $json.hasChanged }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7333348d-0680-4efc-93a4-ca10a113fae7",
+      "name": "Changed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4304,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ipospays-knowledge"
+        },
+        "options": {}
+      },
+      "id": "4c8088d8-cba8-461b-951f-97dafdac34ec",
+      "name": "Qdrant Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [
+        -3936,
+        -208
+      ],
+      "credentials": {
+        "qdrantApi": {
+          "id": "MvEWRgGqiwq3qSev",
+          "name": "QdrantApi account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+          "modelName": "models/gemini-embedding-001"
+      },
+      "id": "f0fbe3a0-6e4f-40a3-9dcc-158374902656",
+      "name": "Embeddings Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -4544,
+        400
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7iSY2TYz3an60Gdc",
+          "name": "1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "source",
+                "value": "={{ $json.url }}"
+              },
+              {
+                "name": "title",
+                "value": "={{ $json.title }}"
+              },
+              {
+                "name": "lastUpdated",
+                "value": "={{ $json.timestamp }}"
+              },
+              {
+                "name": "contentHash",
+                "value": "={{ $json.contentHash }}"
+              },
+              {
+                "name": "versionId",
+                "value": "={{ $json.contentHash.substring(0, 12) }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "3fd2d5d7-39e0-4b7e-8734-6f8a3a2be2db",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        -4320,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 1600,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "id": "43ca0fed-397e-4812-b851-849e57fabaa4",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -4320,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get URL and hash from Extract & Detect Change node\n// (Qdrant Vector Store replaces $json with its own output)\nconst extracted = $('Extract & Detect Change').first().json;\nconst url = extracted.url;\nconst versionId = extracted.contentHash.substring(0, 12);\n\nreturn [{\n  json: {\n    url,\n    versionId,\n    deleteBody: JSON.stringify({\n      filter: {\n        must: [{ key: 'metadata.source', match: { value: url } }],\n        must_not: [{ key: 'metadata.versionId', match: { value: versionId } }]\n      }\n    })\n  }\n}];"
+      },
+      "id": "471119f5-e46c-4f6f-bbd4-408bdbc85c30",
+      "name": "Prepare Delete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3648,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://67b235d3-96eb-45b1-aaa2-0a2156e4ffe1.us-west-1-0.aws.cloud.qdrant.io:6333/collections/ipospays-knowledge/points/delete",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.deleteBody }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "5f97c152-051e-4010-ad12-3ea56aac5d9c",
+      "name": "Delete Old Vectors",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3344,
+        0
+      ],
+      "credentials": {
+        "qdrantApi": {
+          "id": "MvEWRgGqiwq3qSev",
+          "name": "QdrantApi account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst stats = staticData.stats || { changed: 0, skipped: 0, errors: 0 };\nconst totalTracked = Object.keys(staticData.hashes || {}).length;\n\nconst summary = {\n  completedAt: new Date().toISOString(),\n  totalUrlsTracked: totalTracked,\n  pagesChanged: stats.changed,\n  pagesSkipped: stats.skipped,\n  errors: stats.errors\n};\n\n// Reset stats for next run\nstaticData.stats = { changed: 0, skipped: 0, errors: 0 };\n\nreturn [{ json: summary }];"
+      },
+      "id": "6be4076a-8b0f-41fa-aa00-9c4fa388776c",
+      "name": "Pipeline Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5248,
+        48
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Prepare Index Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scheduled Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Index Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Index Fields": {
+      "main": [
+        [
+          {
+            "node": "Ensure Qdrant Indexes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Qdrant Indexes": {
+      "main": [
+        [
+          {
+            "node": "Load All URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load All URLs": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Pipeline Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass Through",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass Through": {
+      "main": [
+        [
+          {
+            "node": "Fetch Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Page": {
+      "main": [
+        [
+          {
+            "node": "Extract & Detect Change",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Detect Change": {
+      "main": [
+        [
+          {
+            "node": "Changed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Changed?": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Prepare Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Delete": {
+      "main": [
+        [
+          {
+            "node": "Delete Old Vectors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Old Vectors": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "5d4869003d307ea5add41a6c7754865a420a7910dc8e17f8b2208a40aa5373c6"
+  }
+}

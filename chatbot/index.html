@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iPOSpays — Support</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Floating Chatbot Widget ─────────────────────────── -->
+
+  <!-- Chat toggle button -->
+  <button id="chat-toggle" aria-label="Open chat">
+    <svg id="chat-icon-open" xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+         viewBox="0 0 24 24">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <svg id="chat-icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+         viewBox="0 0 24 24">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Chat window -->
+  <div id="chat-window" class="hidden">
+    <div id="chat-header">
+      <span>iPOSpays Assistant</span>
+      <button id="chat-close" aria-label="Close chat">&times;</button>
+    </div>
+
+    <div id="chat-messages">
+      <div class="msg bot">
+        <p>👋 Hi! I'm the iPOSpays assistant. Ask me anything about our payment solutions.</p>
+      </div>
+    </div>
+
+    <form id="chat-form" autocomplete="off">
+      <input id="chat-input" type="text" placeholder="Type your question…" required />
+      <button type="submit" id="chat-send" aria-label="Send">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             viewBox="0 0 24 24">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

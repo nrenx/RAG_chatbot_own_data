@@ -1,0 +1,198 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ipospays-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-chat-1111-2222-3333-444455556666",
+      "name": "Chat Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 400],
+      "webhookId": "ipospays-chat-webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "You are the iPOSpays Knowledge Assistant — a helpful, concise customer support AI.\n\nRules:\n- Answer ONLY using the provided context chunks. Never make up information.\n- If the context does not contain enough information, say: \"I don't have enough information to answer that. Please contact iPOSpays support.\"\n- Keep answers concise and well-structured. Use bullet points for lists.\n- When referencing specific pages, mention the source URL.\n- Be professional but friendly."
+        }
+      },
+      "id": "qa-chain-2222-3333-4444-555566667777",
+      "name": "QA Retrieval Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
+      "typeVersion": 1.4,
+      "position": [520, 400]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        },
+        "respondWith": "json",
+        "responseBody": "={{ { answer: $json.text } }}"
+      },
+      "id": "resp-wh-3333-4444-5555-666677778888",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [800, 400]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0.3,
+          "maxOutputTokens": 1024
+        }
+      },
+      "id": "llm-gemini-4444-5555-6666-777788889999",
+      "name": "Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [380, 640],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7iSY2TYz3an60Gdc",
+          "name": "1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "topK": 5
+      },
+      "id": "retriever-5555-6666-7777-88889999aaaa",
+      "name": "Vector Store Retriever",
+      "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+      "typeVersion": 1,
+      "position": [640, 640]
+    },
+    {
+      "parameters": {
+        "qdrantCollection": {
+          "__rl": true,
+          "mode": "id",
+          "value": "ipospays-knowledge"
+        },
+        "options": {}
+      },
+      "id": "qdrant-load-6666-7777-8888-9999aaaabbbb",
+      "name": "Qdrant Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [640, 840],
+      "credentials": {
+        "qdrantApi": {
+          "id": "MvEWRgGqiwq3qSev",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "id": "embed-query-7777-8888-9999-aaaabbbbcccc",
+      "name": "Embeddings Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [480, 840],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7iSY2TYz3an60Gdc",
+          "name": "1"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Chat Webhook": {
+      "main": [
+        [
+          {
+            "node": "QA Retrieval Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Retrieval Chain": {
+      "main": [
+        [
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "QA Retrieval Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Retriever": {
+      "ai_retriever": [
+        [
+          {
+            "node": "QA Retrieval Chain",
+            "type": "ai_retriever",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Retriever",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d4869003d307ea5add41a6c7754865a420a7910dc8e17f8b2208a40aa5373c6"
+  }
+}
